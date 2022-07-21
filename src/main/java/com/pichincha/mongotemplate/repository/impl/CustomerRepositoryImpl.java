@@ -4,6 +4,7 @@ import com.pichincha.mongotemplate.domain.CustomerEntity;
 import com.pichincha.mongotemplate.domain.PetEntity;
 import com.pichincha.mongotemplate.repository.CustomerRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.LookupOperation;
@@ -15,6 +16,9 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
+
 @Repository
 @AllArgsConstructor
 public class CustomerRepositoryImpl implements CustomerRepository {
@@ -22,13 +26,13 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     @Override
     public Optional<CustomerEntity> findById(String id) {
-        Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(Criteria.where("_id").is(id)), getLookup());
+        Aggregation aggregation = newAggregation(Aggregation.match(Criteria.where("_id").is(id)), getLookup(), sort(Sort.Direction.DESC, "pets.name"));
         return Optional.ofNullable(mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(CustomerEntity.class), CustomerEntity.class).getUniqueMappedResult());
     }
 
     @Override
     public List<CustomerEntity> findAll() {
-        Aggregation aggregation = Aggregation.newAggregation(getLookup());
+        Aggregation aggregation = newAggregation(getLookup(), sort(Sort.Direction.DESC, "pets.name"));
         return mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(CustomerEntity.class), CustomerEntity.class).getMappedResults();
     }
 
