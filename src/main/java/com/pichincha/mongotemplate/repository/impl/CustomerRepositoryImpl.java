@@ -1,9 +1,13 @@
 package com.pichincha.mongotemplate.repository.impl;
 
 import com.pichincha.mongotemplate.domain.CustomerEntity;
+import com.pichincha.mongotemplate.domain.PetEntity;
 import com.pichincha.mongotemplate.repository.CustomerRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.LookupOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.util.Streamable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -18,12 +22,14 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     @Override
     public Optional<CustomerEntity> findById(String id) {
-        return Optional.ofNullable(mongoTemplate.findById(id, CustomerEntity.class));
+        Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(Criteria.where("_id").is(id)), getLookup());
+        return Optional.ofNullable(mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(CustomerEntity.class), CustomerEntity.class).getUniqueMappedResult());
     }
 
     @Override
     public List<CustomerEntity> findAll() {
-        return mongoTemplate.findAll(CustomerEntity.class);
+        Aggregation aggregation = Aggregation.newAggregation(getLookup());
+        return mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(CustomerEntity.class), CustomerEntity.class).getMappedResults();
     }
 
     @Override
@@ -41,5 +47,13 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     public String delete(CustomerEntity entity) {
         mongoTemplate.remove(entity);
         return entity.getId();
+    }
+
+    private LookupOperation getLookup() {
+        return LookupOperation.newLookup().
+                from(mongoTemplate.getCollectionName(PetEntity.class)).
+                localField("_id").
+                foreignField("customerId").
+                as("pets");
     }
 }
