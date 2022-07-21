@@ -1,7 +1,7 @@
 package com.pichincha.mongotemplate.repository.impl;
 
+import com.mongodb.BasicDBObject;
 import com.pichincha.mongotemplate.domain.PetEntity;
-import com.pichincha.mongotemplate.domain.dto.PetDto;
 import com.pichincha.mongotemplate.repository.PetRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -29,8 +29,9 @@ public class PetRepositoryImpl implements PetRepository {
                 .as("customer");
 
         Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(Criteria.where("_id").is(id)), lookupOperation);
-        List<PetDto> results = mongoTemplate.aggregate(aggregation, "pets", PetDto.class).getMappedResults();
-        return Optional.ofNullable(mongoTemplate.findById(id, PetEntity.class));
+        PetEntity result = mongoTemplate.aggregate(aggregation, "pets", PetEntity.class).getUniqueMappedResult();
+        BasicDBObject BasicDBObject = mongoTemplate.aggregate(aggregation, "pets", BasicDBObject.class).getUniqueMappedResult();
+        return Optional.ofNullable(result);
     }
 
     @Override

@@ -10,12 +10,4 @@ public class PetDto implements Serializable {
     private String customerId;
     private String name;
     private String gender;
-    private CustomerDto customer;
-}
-
-@Data
-class CustomerDto {
-    private String id;
-    private String name;
-    private String lastName;
 }
