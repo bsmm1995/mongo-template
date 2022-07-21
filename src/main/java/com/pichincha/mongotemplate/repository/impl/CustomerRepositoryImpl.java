@@ -32,7 +32,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     @Override
     public List<CustomerEntity> findAll() {
-        Aggregation aggregation = newAggregation(getLookup(), sort(Sort.Direction.DESC, "pets.name"));
+        Aggregation aggregation = newAggregation(getLookup(), sort(Sort.Direction.DESC, "name"));
         return mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(CustomerEntity.class), CustomerEntity.class).getMappedResults();
     }
 
