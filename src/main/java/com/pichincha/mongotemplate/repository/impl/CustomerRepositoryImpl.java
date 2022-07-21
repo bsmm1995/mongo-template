@@ -8,7 +8,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.LookupOperation;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.util.Streamable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -26,13 +25,13 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     @Override
     public Optional<CustomerEntity> findById(String id) {
-        Aggregation aggregation = newAggregation(Aggregation.match(Criteria.where("_id").is(id)), getLookup(), sort(Sort.Direction.DESC, "pets.name"));
+        Aggregation aggregation = Aggregation.newAggregation(getLookup());
         return Optional.ofNullable(mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(CustomerEntity.class), CustomerEntity.class).getUniqueMappedResult());
     }
 
     @Override
     public List<CustomerEntity> findAll() {
-        Aggregation aggregation = newAggregation(getLookup(), sort(Sort.Direction.DESC, "name"));
+        Aggregation aggregation = newAggregation(getLookup(), sort(Sort.Direction.ASC, "name"));
         return mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(CustomerEntity.class), CustomerEntity.class).getMappedResults();
     }
 
